@@ -2,7 +2,6 @@ module Main exposing (Action(..), Model, getPanel, init, main, update, view)
 
 -- import List.Extra exposing (getAt, removeAt)
 
-import Array
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -12,11 +11,6 @@ import Random
 import Random.List exposing (..)
 import Task
 import Time
-import Tuple
-
-
-
--- import Time exposing (Time)
 
 
 main =
@@ -34,18 +28,6 @@ type alias Word =
 
 type alias Words =
     List Word
-
-
-
---
---
---
--- 定义列表Words类型
--- type alias Word =
---     {
---     index : Int --单词索引
---     , word : String --单词
---     }
 
 
 type alias Model =
@@ -73,16 +55,10 @@ init _ =
       , fullWord = []
       }
     , Http.get
-        { url = "/example/word.txt" --本地txt文件
+        { url = "/source/word.txt" --本地txt文件
         , expect = Http.expectString GotWords
         }
     )
-
-
-
---事件
--- type alias Indexs =
---     Words
 
 
 type Action
@@ -185,4 +161,5 @@ view model =
             )
         , --right side
           div [ class "right-side" ] (getPanel model)
+        , div [] [ text "123" ]
         ]

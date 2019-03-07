@@ -85,14 +85,24 @@ update msg model =
         GotWords result ->
             case result of
                 Ok fullText ->
-                    ( { model | fullWord = getWords fullText }, Random.generate Twenty (Random.List.shuffle model.fullWord) )
+                    let
+                        fullWords =
+                            getWords fullText
+                    in
+                    ( { model | fullWord = fullWords }
+                    , Random.generate Twenty (Random.List.shuffle fullWords)
+                    )
 
                 Err _ ->
                     ( model, Cmd.none )
 
         Twenty words ->
             -- let                originalWords=List.take 20 indexs
-            ( { model | originalWord = List.take 20 words }, Random.generate Three (Random.List.shuffle model.originalWord) )
+            let
+                originalWords =
+                    List.take 20 words
+            in
+            ( { model | originalWord = originalWords }, Random.generate Three (Random.List.shuffle originalWords) )
 
         Three words ->
             -- let               targetWords=List.take 3 indexs
@@ -161,5 +171,4 @@ view model =
             )
         , --right side
           div [ class "right-side" ] (getPanel model)
-        , div [] [ text "123" ]
         ]

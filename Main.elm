@@ -5,7 +5,7 @@ module Main exposing (Action(..), Model, getPanel, init, main, update, view)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick,onInput)
 import Http
 import Random
 import Random.List exposing (..)
@@ -19,7 +19,12 @@ main =
 
 subscription : Model -> Sub Action
 subscription model =
-    Time.every 1000 Tick
+    if model.tick == 0  then
+      if  model.clickTrue == 3 then
+        Time.every 1000 OnClickTick
+        else Sub.none
+      else
+      Time.every 1000 Tick
 
 
 type alias Word =
@@ -39,6 +44,10 @@ type alias Model =
     , tick : Int --记号
     , clickItems : Words
     , fullWord : Words --txt文件里的所有单词
+    , clickTrue : Int  --点击次数
+    , clickTick : Int  --点击三次之后执行ClickTick当clickTick为0的时候重置
+    , ifBigin : Bool -- 当为True的时候是准备界面，False的时候游戏界面
+    , setTime : Int
     }
 
 
@@ -50,9 +59,13 @@ init : () -> ( Model, Cmd Action )
 init _ =
     ( { targetWord = []
       , originalWord = []
-      , tick = 10000
+      , tick = 3*1000
       , clickItems = []
       , fullWord = []
+      , clickTrue = 0
+      , clickTick = 1000
+      , ifBigin = True
+      , setTime = 0
       }
     , Http.get
         { url = "/source/word.txt" --本地txt文件
@@ -62,19 +75,29 @@ init _ =
 
 
 type Action
-    = ChangeColor String --给这个事件传个String类型的参数
+    = ChangeColor String Int --给这个事件传个String类型的参数
     | Tick Time.Posix
       -- | Reset
     | GotWords (Result Http.Error String) --发起请求，获得本地的txt文件
     | Twenty Words
     | Three Words
+    | OnClickTick Time.Posix
+    | IfBigin
+    | SetTime String
 
 
 update : Action -> Model -> ( Model, Cmd Action )
 update msg model =
     case msg of
-        ChangeColor word ->
-            ( { model | clickItems = word :: model.clickItems }, Cmd.none )
+        ChangeColor word number->
+            --点击3次后重置
+            if model.clickTrue /= 3 then
+                -- if model.clickTick < 0 then
+                --     init ()
+                --  else (model, Cmd.none)
+                ( { model | clickItems = word :: model.clickItems, clickTrue = model.clickTrue + number }, Cmd.none )
+              else
+              (model, Cmd.none)
 
         --：：表示append
         Tick newtime ->
@@ -108,6 +131,28 @@ update msg model =
             -- let               targetWords=List.take 3 indexs
             ( { model | targetWord = List.take 3 words }, Cmd.none )
 
+        OnClickTick newtime ->
+          if model.clickTick == 0 then ({model |  targetWord = []
+            , originalWord = []
+            , tick = model.setTime
+            , clickItems = []
+            , fullWord = []
+            , clickTrue = 0
+            , clickTick = 1000
+            , ifBigin = False
+            },Http.get
+                { url = "/source/word.txt" --本地txt文件
+                , expect = Http.expectString GotWords
+                })
+            else
+          ({model | clickTick = model.clickTick - 1000 }, Cmd.none)
+        IfBigin ->
+          ({model | ifBigin = False}, Cmd.none)
+
+        SetTime newTick ->
+          ({model | tick = ( (Maybe.withDefault 100 (String.toInt newTick)) * 1000)
+          ,setTime = ( (Maybe.withDefault 100 (String.toInt newTick)) * 1000)},Cmd.none)
+
 
 getWords : String -> List String
 getWords fullText =
@@ -124,7 +169,7 @@ getPanel model =
         (\x ->
             --\参数 ->返回值表达式 \a -> b
             button
-                [ onClick (ChangeColor x)
+                [ class "chooseButton", onClick (ChangeColor x 1)
                 , style "color"
                     (getColor model x)
 
@@ -159,6 +204,12 @@ getPanel_ model =
 
 view : Model -> Html Action
 view model =
+  if model.ifBigin then
+    div [class "contain"] [
+    input [ placeholder "输入单词显示的时间 /s",onInput SetTime, class "input-s" ] []
+    , button [onClick IfBigin, class "bigin" ] [text "Bigin"]
+    ]
+    else
     div [ class "contain" ]
         [ --left side
           div [ class "left-side" ]
@@ -170,5 +221,8 @@ view model =
                 []
             )
         , --right side
+        if model.tick > 0 then
+          div [ class "right-side" ] []
+          else
           div [ class "right-side" ] (getPanel model)
         ]

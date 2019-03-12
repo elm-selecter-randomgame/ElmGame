@@ -1,2 +1,3 @@
 # ElmGame
-elm游戏制作
+funny word memory game 
+click here:https://elm-selecter-randomgame.github.io/ElmWordMemoryGame/ try it

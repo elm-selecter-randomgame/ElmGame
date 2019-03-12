@@ -1,3 +1,3 @@
 # ElmGame
 funny word memory game 
-click here:https://elm-selecter-randomgame.github.io/ElmWordMemoryGame/ try it
+click here:https://elm-selecter-randomgame.github.io/WordMemory/ try it

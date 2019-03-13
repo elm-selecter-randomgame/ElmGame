@@ -21,13 +21,13 @@ subscription : Model -> Sub Action
 subscription model =
     if model.tick == 0 then
         if model.clickTrue == 3 then
-            Time.every 1000 OnClickTick
+            Time.every 1 OnClickTick
 
         else
             Sub.none
 
     else
-        Time.every 1000 Tick
+        Time.every 1 Tick
 
 
 type alias Word =
@@ -44,13 +44,13 @@ type alias Model =
     , originalWord : Words --基础单词
 
     -- 目标单词是否显示
-    , tick : Int --记号
+    , tick : Float --记号
     , clickItems : Words
     , fullWord : Words --txt文件里的所有单词
     , clickTrue : Int --点击次数
     , clickTick : Int --点击三次之后执行ClickTick当clickTick为0的时候重置
     , ifBigin : Bool -- 当为True的时候是准备界面，False的时候游戏界面
-    , setTime : Int
+    , setTime : Float --onInput时先把时间储存起来
     }
 
 
@@ -105,7 +105,7 @@ update msg model =
 
         --：：表示append
         Tick newtime ->
-            ( { model | tick = model.tick - 1000 }, Cmd.none )
+            ( { model | tick = model.tick - 1 }, Cmd.none )
 
         -- Reset ->
         --     init ()
@@ -154,18 +154,13 @@ update msg model =
                 )
 
             else
-                ( { model | clickTick = model.clickTick - 1000 }, Cmd.none )
+                ( { model | clickTick = model.clickTick - 1 }, Cmd.none )
 
         IfBigin ->
-            ( { model | ifBigin = False }, Cmd.none )
+            ( { model | ifBigin = False, tick = model.setTime}, Cmd.none )
 
         SetTime newTick ->
-            ( { model
-                | tick = Maybe.withDefault 100 (String.toInt newTick) * 1000
-                , setTime = Maybe.withDefault 100 (String.toInt newTick) * 1000
-              }
-            , Cmd.none
-            )
+            ({model | setTime = ( (Maybe.withDefault 100.0 (String.toFloat newTick)) * 1000)},Cmd.none)
 
 
 getWords : String -> List String

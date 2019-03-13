@@ -157,10 +157,10 @@ update msg model =
                 ( { model | clickTick = model.clickTick - 1 }, Cmd.none )
 
         IfBigin ->
-            ( { model | ifBigin = False, tick = model.setTime}, Cmd.none )
+            ( { model | ifBigin = False, tick = model.setTime }, Cmd.none )
 
         SetTime newTick ->
-            ({model | setTime = ( (Maybe.withDefault 100.0 (String.toFloat newTick)) * 1000)},Cmd.none)
+            ( { model | setTime = Maybe.withDefault 100.0 (String.toFloat newTick) * 1000 }, Cmd.none )
 
 
 getWords : String -> List String
@@ -225,22 +225,26 @@ view model =
                     ]
 
               else
-                div [ class "col-md-12" ]
-                    [ --left side
-                      div [ class "row" ]
-                        -- (getPanel_ model)
+                -- div [ class "col-md-12" ]
+                --     [ --left side
+                div [ class "col-md-3" ]
+                    -- (getPanel_ model)
+                    [ div [ class "row" ]
                         (if model.tick > 0 then
                             getPanel_ model
 
                          else
                             []
                         )
-                    , --right side
-                      if model.tick > 0 then
-                        div [ class "row" ] []
-
-                      else
-                        div [ class "row" ] (getPanel model)
                     ]
+            , --right side
+              if model.tick > 0 then
+                div [ class "col-md-8 col-md-offset-4" ] []
+
+              else
+                div [ class "col-md-8 col-md-offset-4" ]
+                    [ div [ class "row" ] (getPanel model) ]
+
+            -- ]
             ]
         ]
